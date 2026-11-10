@@ -10,6 +10,8 @@ coverage.html
 /bin/
 /dist/
 
+go.work.sum
+
 .env
 .env.*
 !.env.example

@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.x"
+          cache: true
+
+      - name: Run tests
+        run: go test ./...
+        shell: bash
+
+      - name: Build release notes
+        id: notes
+        run: |
+          {
+            echo "## What's Changed"
+            echo ""
+            git log --pretty=format:'* %s (%h)' $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo HEAD^)..HEAD
+          } > release-notes.md
+        shell: bash
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-notes.md
+          generate_release_notes: true
+          draft: false
+          prerelease: false
